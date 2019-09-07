@@ -8,15 +8,15 @@ data "vsphere_virtual_machine" "template" {
 }
 
 resource "vsphere_virtual_machine" "consul-vm" {
-  name   = local.server_name
-  folder = var.folder
-
+  name             = local.server_name
+  folder           = var.folder
   resource_pool_id = var.resource_pool_id
   datastore_id     = var.datastore_id
   num_cpus         = 1
   memory           = 768
   guest_id         = data.vsphere_virtual_machine.template.guest_id
   scsi_type        = data.vsphere_virtual_machine.template.scsi_type
+  tags             = ["consul_server"]
 
   clone {
     template_uuid = data.vsphere_virtual_machine.template.id
@@ -34,9 +34,8 @@ resource "vsphere_virtual_machine" "consul-vm" {
 
   # https://www.terraform.io/docs/provisioners/connection.html#example-usage
   connection {
-    host = self.default_ip_address
-    type = "ssh"
     host     = self.guest_ip_addresses[0]
+    type     = "ssh"
     user     = "ubuntu"
     password = "ubuntu"
   }
