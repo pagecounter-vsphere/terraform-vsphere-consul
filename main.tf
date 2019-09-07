@@ -27,6 +27,7 @@ resource "vsphere_virtual_machine" "consul-vm" {
         host_name = "${local.server_name}"
         domain    = "${var.sub}.${var.domain}"
       }
+      network_interface {}
 
     }
   }
