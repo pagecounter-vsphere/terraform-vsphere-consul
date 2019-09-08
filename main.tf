@@ -1,5 +1,5 @@
 locals {
-  server_name = "consul-${var.dc}"
+  consul_server = join(",", formatlist("\"consul%02d-${var.dc}.${var.sub}.${var.domain}\"", range(1, 1 + var.consul_count)))
 }
 
 data "vsphere_virtual_machine" "template" {
@@ -8,7 +8,8 @@ data "vsphere_virtual_machine" "template" {
 }
 
 resource "vsphere_virtual_machine" "consul-vm" {
-  name             = local.server_name
+  count            = var.consul_count
+  name             = "${format("consul%02d", count.index + 1)}-${var.dc}"
   folder           = var.folder
   resource_pool_id = var.resource_pool_id
   datastore_id     = var.datastore_id
@@ -23,7 +24,7 @@ resource "vsphere_virtual_machine" "consul-vm" {
 
     customize {
       linux_options {
-        host_name = local.server_name
+        host_name = "${format("consul%02d", count.index + 1)}-${var.dc}"
         domain    = "${var.sub}.${var.domain}"
       }
       network_interface {
@@ -59,7 +60,9 @@ resource "vsphere_virtual_machine" "consul-vm" {
       "export DC=${var.dc}",
       "export IFACE=${var.iface}",
       "export WAN_JOIN=${var.consul_wan_join}",
-      "curl -sLo /tmp/consul.sh https://raw.githubusercontent.com/kikitux/curl-bash/master/consul-1server/consul.sh",
+      "export COUNT=${var.consul_count}",
+      "export RETRY_JOIN='${local.consul_server}'",
+      "curl -sLo /tmp/consul.sh https://raw.githubusercontent.com/kikitux/curl-bash/master/consul-server/consul.sh",
       "sudo -E bash /tmp/consul.sh",
       "curl -sLo /tmp/node_exporter.sh https://raw.githubusercontent.com/kikitux/curl-bash/master/provision/node_exporter.sh",
       "sudo -E bash /tmp/node_exporter.sh",
@@ -68,10 +71,17 @@ resource "vsphere_virtual_machine" "consul-vm" {
 }
 
 output "guest_ip_address" {
-  value = vsphere_virtual_machine.consul-vm.guest_ip_addresses[0]
+  value = vsphere_virtual_machine.consul-vm.0.guest_ip_addresses
 }
 
 output "name" {
-  value = local.server_name
+  value = vsphere_virtual_machine.consul-vm.0.name
 }
 
+output "guest_ip_addresses" {
+  value = vsphere_virtual_machine.consul-vm.*.guest_ip_addresses
+}
+
+output "names" {
+  value = vsphere_virtual_machine.consul-vm.*.name
+}

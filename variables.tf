@@ -1,3 +1,7 @@
+variable "consul_count" {
+  default = 1
+}
+
 variable "datastore_id" {
 }
 
@@ -32,4 +36,3 @@ variable "vsphere_datacenter_id" {
 variable "consul_wan_join" {
   default = ""
 }
-
