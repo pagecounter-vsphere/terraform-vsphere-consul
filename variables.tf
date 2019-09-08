@@ -30,6 +30,5 @@ variable "vsphere_datacenter_id" {
 }
 
 variable "consul_wan_join" {
-  default = ""
 }
 
