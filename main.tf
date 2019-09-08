@@ -71,7 +71,7 @@ resource "vsphere_virtual_machine" "consul-vm" {
 }
 
 output "consul_server" {
-  valu2 = local.consul_server
+  value = local.consul_server
 }
 
 output "guest_ip_address" {
