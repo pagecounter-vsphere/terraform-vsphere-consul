@@ -71,7 +71,7 @@ resource "vsphere_virtual_machine" "consul-vm" {
 }
 
 output "consul_server" {
-  value = local.consul_server
+  value = join(",", formatlist("\"%s.${var.sub}.${var.domain}\"", vsphere_virtual_machine.consul-vm.*.name))
 }
 
 output "guest_ip_address" {
